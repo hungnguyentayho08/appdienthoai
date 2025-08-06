@@ -199,7 +199,23 @@ public class DienThoaiUI extends JFrame  {
 		int selectedRow = table.getSelectedRow();
 		
 		if(selectedRow == -1) {
-			JOptionPane.show
+			JOptionPane.showMessageDialog(this, " Vui lòng chọn điện thoại cần xóa");
+			return ;
+		}
+		
+		String ma = tableModel.getValueAt(selectedRow , 0).toString();
+		
+		int confirm =JOptionPane.showConfirmDialog(this, "Bạn chăc chắc muốn không " , "Xác nhận ", JOptionPane.YES_NO_CANCEL_OPTION);
+		if(confirm == JOptionPane.YES_OPTION) {
+			DienThoaiDAO dao = new DienThoaiDAO();
+			boolean ok = dao.delete(ma);
+			if(ok) {
+				JOptionPane.showConfirmDialog(this , "Xóa thành công !");
+				loadDataToTable();
+				clearFrom();
+			}else {
+				JOptionPane.showConfirmDialog(this, "Xóa thất bại");
+			}
 		}
 		
 	}
