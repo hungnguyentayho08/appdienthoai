@@ -10,6 +10,7 @@ import java.util.List;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollBar;
 import javax.swing.JScrollPane;
@@ -26,6 +27,7 @@ public class DienThoaiUI extends JFrame  {
 	private DefaultTableModel tableModel ;
 	private JTextField txtMa , txtTen , txtHang , txtGia ,txtSoLuong ;
 	private JButton btnThem ;
+	private JButton btnXoa;
 	
 	
 	public DienThoaiUI() {
@@ -68,7 +70,7 @@ public class DienThoaiUI extends JFrame  {
 		inputPanel.add(new JLabel("Mã:"));
 		inputPanel.add(new JLabel("Tên:"));
 		inputPanel.add(new JLabel("Hãng:"));
-		inputPanel.add(new JLabel("Gia:"));
+		inputPanel.add(new JLabel("Giá:"));
 		inputPanel.add(new JLabel("Số Lượng:"));
 		
 		inputPanel.add(txtMa);
@@ -94,15 +96,39 @@ public class DienThoaiUI extends JFrame  {
 		JPanel btnPanel = new JPanel();
 		btnPanel.add(btnThem);
 		
+		JPanel southPanel = new JPanel(new BorderLayout());
+		southPanel.add(inputPanel, BorderLayout.CENTER);
+		southPanel.add(btnPanel, BorderLayout.SOUTH);
+
+		panel.add(southPanel, BorderLayout.SOUTH);
+		
+		
+		//////////////////////////////////////////
+		
+		// nút Xóa 
+	btnXoa = new JButton("Xóa");
+	btnXoa.addActionListener(new ActionListener() {
+		
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			// TODO Auto-generated method stub
+			xoaDienThoai();
+			
+		}
+	});
+	
+		btnPanel.add(btnXoa) ; // thêm nút xóa vào giao diện  
+		
+		
+		
+		
+		
 		
 		this.add(panel); // thêm panel vào frame
 		
 	}
 	
-	private void themDienThoai() {
-		
-		
-	}
+	
 
 	
 	
@@ -126,8 +152,58 @@ public class DienThoaiUI extends JFrame  {
 		}
 	
 	
-	
+	private void themDienThoai() {
+		String ma = txtMa.getText().trim();
+		String ten = txtTen.getText().trim();
+		String hang = txtHang.getText().trim();
+		double gia = 0 ;
+		int soluong = 0 ;
+		
+		try {
+			gia = Double.parseDouble(txtGia.getText().trim());
+			soluong = Integer.parseInt(txtSoLuong.getText().trim());
+		} catch (NumberFormatException e) {
+			JOptionPane.showMessageDialog(this , "Giá và số lượng phải là số !");
+			return ;
+		}
+		
+		if(ma.isEmpty() || ten.isEmpty() ||  hang.isEmpty()) {
+			JOptionPane.showMessageDialog(this, "Vui lòng nhập đầy đủ thông tin!");
+			return ;
+		}
+		
+		Dienthoai dt = new Dienthoai(ma , ten , hang , gia , soluong);
+		DienThoaiDAO dao = new DienThoaiDAO();
+		boolean ok = dao.insert(dt);
+		
+		if(ok) {
+			JOptionPane.showMessageDialog(this, "Thêm thành công !");
+			loadDataToTable();
+			clearFrom();
+		} else {
+			JOptionPane.showMessageDialog(this, "Thêm thất bịa ! Mã đã tồn tại =))");
+		}
 		
 	}
 
+	private void clearFrom(){	
+		txtMa.setText("");
+		txtTen.setText("");
+		txtHang.setText("");
+		txtGia.setText("");
+		txtSoLuong.setText("");
+	}
+	
+	
+	private void xoaDienThoai() {
+		int selectedRow = table.getSelectedRow();
+		
+		if(selectedRow == -1) {
+			JOptionPane.show
+		}
+		
+	}
+	
+	
 
+}

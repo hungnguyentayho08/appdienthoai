@@ -1,6 +1,7 @@
 package dao;
 
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -30,5 +31,26 @@ public class DienThoaiDAO {
 			e.printStackTrace();
 		}
 		return list ;
-	} 
+	}
+	
+	
+	public boolean insert(Dienthoai dt) {
+		Connection conn = DBConnection.getConnection();
+		String sql = "INSERT INTO dienthoai(ma, ten, hang, gia, soluong) VALUES (?, ?, ?, ?, ?)" ;
+		try {
+			PreparedStatement ps = conn.prepareStatement(sql);
+			ps.setString(1, dt.getMa()) ;
+			ps.setString(2, dt.getTen()) ;
+			ps.setString(3, dt.getHang()) ;
+			ps.setDouble(4, dt.getGia()) ;
+			ps.setInt(5, dt.getSoluong()) ;
+			
+			return ps.executeUpdate() > 0 ;
+					
+		}catch (SQLException e) {
+			e.printStackTrace();
+		}
+		
+		return false ;
+	}
 }
