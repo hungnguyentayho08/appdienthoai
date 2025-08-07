@@ -1,12 +1,12 @@
 package model;
 
 public class Dienthoai {
-	private String ma ;
+	private int ma ;
 	private String ten ;
 	private String hang ;
 	private double gia ;
 	private int soluong ;
-	public Dienthoai(String ma, String ten, String hang, double gia, int soluong) {
+	public Dienthoai(int ma, String ten, String hang, double gia, int soluong) {
 		super();
 		this.ma = ma;
 		this.ten = ten;
@@ -14,10 +14,10 @@ public class Dienthoai {
 		this.gia = gia;
 		this.soluong = soluong;
 	}
-	public String getMa() {
+	public int getMa() {
 		return ma;
 	}
-	public void setMa(String ma) {
+	public void setMa(int ma) {
 		this.ma = ma;
 	}
 	public String getTen() {

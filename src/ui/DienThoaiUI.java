@@ -1,12 +1,16 @@
 package ui;
 
 import java.awt.BorderLayout;
+import java.awt.Component;
 import java.awt.Font;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.List;
 
+import javax.swing.AbstractButton;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -28,9 +32,14 @@ public class DienThoaiUI extends JFrame  {
 	private JTextField txtMa , txtTen , txtHang , txtGia ,txtSoLuong ;
 	private JButton btnThem ;
 	private JButton btnXoa;
+	private JButton btnSua;
+	private Component frame;
+	private JTextField txtTim;
+	private DienThoaiDAO dao;
 	
 	
 	public DienThoaiUI() {
+		dao = new DienThoaiDAO();
 		setTitle("Quản Lý Bán Điện Thoại ") ;
 		setSize(800, 400);
 		setDefaultCloseOperation(EXIT_ON_CLOSE);
@@ -117,13 +126,48 @@ public class DienThoaiUI extends JFrame  {
 		}
 	});
 	
+	// Nút Sửa
+	btnSua = new JButton("Sửa");
+	btnSua.addActionListener(new ActionListener() {
+		
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			// TODO Auto-generated method stub
+			suaDienThoai();
+		}
+	});
+	
+	table.addMouseListener(new MouseAdapter() {
+	    public void mouseClicked(MouseEvent e) {
+	        int row = table.getSelectedRow();
+	        txtMa.setText(tableModel.getValueAt(row, 0).toString()); // đừng quên Mã
+	        txtTen.setText(tableModel.getValueAt(row, 1).toString());
+	        txtHang.setText(tableModel.getValueAt(row, 2).toString());
+	        txtGia.setText(tableModel.getValueAt(row, 3).toString());
+	        txtSoLuong.setText(tableModel.getValueAt(row, 4).toString());
+	    }
+	});
+	
+	txtTim = new JTextField(20);
+	JButton btnTim = new JButton("Tìm");
+
+	btnTim.addActionListener(new ActionListener() {
+	    public void actionPerformed(ActionEvent e) {
+	        timKiemDienThoai();
+	    }
+	});
+
+	JPanel panelTim = new JPanel();
+	panelTim.add(new JLabel("Tìm kiếm:"));
+	panelTim.add(txtTim);
+	panelTim.add(btnTim);
+	this.add(panelTim, BorderLayout.NORTH);
+
+	
+	
+	
+		btnPanel.add(btnSua);
 		btnPanel.add(btnXoa) ; // thêm nút xóa vào giao diện  
-		
-		
-		
-		
-		
-		
 		this.add(panel); // thêm panel vào frame
 		
 	}
@@ -153,38 +197,39 @@ public class DienThoaiUI extends JFrame  {
 	
 	
 	private void themDienThoai() {
-		String ma = txtMa.getText().trim();
-		String ten = txtTen.getText().trim();
-		String hang = txtHang.getText().trim();
-		double gia = 0 ;
-		int soluong = 0 ;
-		
-		try {
-			gia = Double.parseDouble(txtGia.getText().trim());
-			soluong = Integer.parseInt(txtSoLuong.getText().trim());
-		} catch (NumberFormatException e) {
-			JOptionPane.showMessageDialog(this , "Giá và số lượng phải là số !");
-			return ;
-		}
-		
-		if(ma.isEmpty() || ten.isEmpty() ||  hang.isEmpty()) {
-			JOptionPane.showMessageDialog(this, "Vui lòng nhập đầy đủ thông tin!");
-			return ;
-		}
-		
-		Dienthoai dt = new Dienthoai(ma , ten , hang , gia , soluong);
-		DienThoaiDAO dao = new DienThoaiDAO();
-		boolean ok = dao.insert(dt);
-		
-		if(ok) {
-			JOptionPane.showMessageDialog(this, "Thêm thành công !");
-			loadDataToTable();
-			clearFrom();
-		} else {
-			JOptionPane.showMessageDialog(this, "Thêm thất bịa ! Mã đã tồn tại =))");
-		}
-		
+	    int ma = 0;
+	    String ten = txtTen.getText().trim();
+	    String hang = txtHang.getText().trim();
+	    double gia = 0;
+	    int soluong = 0;
+
+	    try {
+	        ma = Integer.parseInt(txtMa.getText().trim());
+	        gia = Double.parseDouble(txtGia.getText().trim());
+	        soluong = Integer.parseInt(txtSoLuong.getText().trim());
+	    } catch (NumberFormatException e) {
+	        JOptionPane.showMessageDialog(this , "Mã, Giá và Số lượng phải là số!");
+	        return;
+	    }
+
+	    if(ten.isEmpty() ||  hang.isEmpty()) {
+	        JOptionPane.showMessageDialog(this, "Vui lòng nhập đầy đủ thông tin!");
+	        return;
+	    }
+
+	    Dienthoai dt = new Dienthoai(ma , ten , hang , gia , soluong);
+	    DienThoaiDAO dao = new DienThoaiDAO();
+	    boolean ok = dao.insert(dt);
+
+	    if(ok) {
+	        JOptionPane.showMessageDialog(this, "Thêm thành công!");
+	        loadDataToTable();
+	        clearFrom();
+	    } else {
+	        JOptionPane.showMessageDialog(this, "Thêm thất bại! Mã đã tồn tại.");
+	    }
 	}
+
 
 	private void clearFrom(){	
 		txtMa.setText("");
@@ -196,30 +241,74 @@ public class DienThoaiUI extends JFrame  {
 	
 	
 	private void xoaDienThoai() {
-		int selectedRow = table.getSelectedRow();
-		
-		if(selectedRow == -1) {
-			JOptionPane.showMessageDialog(this, " Vui lòng chọn điện thoại cần xóa");
-			return ;
-		}
-		
-		String ma = tableModel.getValueAt(selectedRow , 0).toString();
-		
-		int confirm =JOptionPane.showConfirmDialog(this, "Bạn chăc chắc muốn không " , "Xác nhận ", JOptionPane.YES_NO_CANCEL_OPTION);
-		if(confirm == JOptionPane.YES_OPTION) {
-			DienThoaiDAO dao = new DienThoaiDAO();
-			boolean ok = dao.delete(ma);
-			if(ok) {
-				JOptionPane.showConfirmDialog(this , "Xóa thành công !");
-				loadDataToTable();
-				clearFrom();
-			}else {
-				JOptionPane.showConfirmDialog(this, "Xóa thất bại");
-			}
-		}
-		
+	    int selectedRow = table.getSelectedRow();
+
+	    if (selectedRow == -1) {
+	        JOptionPane.showMessageDialog(this, "Vui lòng chọn điện thoại cần xóa");
+	        return;
+	    }
+
+	    int ma = Integer.parseInt(tableModel.getValueAt(selectedRow , 0).toString());
+
+	    int confirm = JOptionPane.showConfirmDialog(this, "Bạn chắc chắn muốn xóa?", "Xác nhận", JOptionPane.YES_NO_OPTION);
+	    if (confirm == JOptionPane.YES_OPTION) {
+	        DienThoaiDAO dao = new DienThoaiDAO();
+	        boolean ok = dao.delete(ma);
+	        if (ok) {
+	            JOptionPane.showMessageDialog(this , "Xóa thành công!");
+	            loadDataToTable();
+	            clearFrom();
+	        } else {
+	            JOptionPane.showMessageDialog(this, "Xóa thất bại!");
+	        }
+	    }
 	}
-	
-	
+
+	private void suaDienThoai() {
+	    int selectedRow = table.getSelectedRow();
+	    if (selectedRow == -1) {
+	        JOptionPane.showMessageDialog(this, "Vui lòng chọn dòng để sửa");
+	        return;
+	    }
+
+	    try {
+	        int id = Integer.parseInt(tableModel.getValueAt(selectedRow, 0).toString());
+	        String ten = txtTen.getText().trim();
+	        String hang = txtHang.getText().trim();
+	        double gia = Double.parseDouble(txtGia.getText().trim());
+	        int soLuong = Integer.parseInt(txtSoLuong.getText().trim());
+
+	        Dienthoai dt = new Dienthoai(id, ten, hang, gia, soLuong);
+	        DienThoaiDAO dao = new DienThoaiDAO();
+	        boolean success = dao.updateDienThoai(dt);
+
+	        if (success) {
+	            loadDataToTable();
+	            JOptionPane.showMessageDialog(this, "Cập nhật thành công!");
+	        } else {
+	            JOptionPane.showMessageDialog(this, "Cập nhật thất bại!");
+	        }
+	    } catch (Exception ex) {
+	        ex.printStackTrace();
+	        JOptionPane.showMessageDialog(this, "Dữ liệu không hợp lệ");
+	    }
+	}
+
+	private void timKiemDienThoai() {
+	    String keyword = txtTim.getText().trim();
+	    if (keyword.isEmpty()) {
+	        loadDataToTable(); // Hiện toàn bộ nếu ô trống
+	        return;
+	    }
+
+	    List<Dienthoai> ketQua = dao.timKiemDienThoai(keyword);
+	    tableModel.setRowCount(0); // Clear bảng
+	    for (Dienthoai dt : ketQua) {
+	    	   tableModel.addRow(new Object[]{
+	            dt.getMa(), dt.getTen(), dt.getHang(), dt.getGia(), dt.getSoluong()
+	        });
+	    }
+	}
+
 
 }
