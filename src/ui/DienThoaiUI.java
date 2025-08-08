@@ -1,19 +1,25 @@
 package ui;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Font;
 import java.awt.GridLayout;
+import java.awt.PopupMenu;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.io.File;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.Comparator;
 import java.util.List;
 
 import javax.swing.AbstractButton;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
+import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -38,6 +44,11 @@ public class DienThoaiUI extends JFrame  {
 	private Component frame;
 	private JTextField txtTim;
 	private DienThoaiDAO dao;
+	private Component buttonPanel;
+	private JButton btnXuatCSV;
+	private Component panelButton;
+	private Dienthoai[] danhSachDienThoai;
+	private DienThoaiDAO dienThoaiDAO;
 	
 	
 	public DienThoaiUI() {
@@ -180,6 +191,44 @@ public class DienThoaiUI extends JFrame  {
 		}
 	});
 	panelTim.add(cbSort);
+	
+	
+
+	
+	
+	// Nút xuất file csv
+	btnXuatCSV = new JButton("Xuất CSV");
+	btnPanel.add(btnXuatCSV);
+	
+	btnXuatCSV.addActionListener(e -> xuatCSV());
+	
+	
+	
+	
+//	Nút thêm Thống kê
+	JButton btnThongKe = new JButton("Thống kê");
+	btnThongKe.setBackground(Color.DARK_GRAY);
+	btnThongKe.setForeground(Color.WHITE);
+	btnPanel.add(btnThongKe);
+	
+	btnThongKe.addActionListener(e -> {
+		List<Dienthoai> ds = dao.getAll();
+
+	    int tongSoLuong = 0;
+	    double tongGiaTri = 0;
+
+	    for (Dienthoai dt : ds) {
+	        tongSoLuong += dt.getSoluong();
+	        tongGiaTri += dt.getSoluong() * dt.getGia();
+	    }
+
+	    JOptionPane.showMessageDialog(this,
+	        "Kết quả thống kê:\n" +
+	        "- Tổng số lượng điện thoại: " + tongSoLuong + "\n" +
+	        "- Tổng giá trị: " + String.format("%,.0f", tongGiaTri) + " VNĐ"
+	    );
+	});
+
 	
 		btnPanel.add(btnSua);// thêm nút sửa vào giao diện  
 		btnPanel.add(btnXoa) ; // thêm nút xóa vào giao diện  
@@ -357,6 +406,37 @@ public class DienThoaiUI extends JFrame  {
 	    }
 		
 	}
+	
+	////////////////////////////////////
+	
+	private void xuatCSV() {
+	    JFileChooser fileChooser = new JFileChooser();
+	    fileChooser.setDialogTitle("Chọn nơi lưu file CSV");
+	    int userSelection = fileChooser.showSaveDialog(this);
+
+	    if (userSelection == JFileChooser.APPROVE_OPTION) {
+	        File fileToSave = fileChooser.getSelectedFile();
+
+	        try (PrintWriter pw = new PrintWriter(fileToSave)) {
+	            // Ghi dòng tiêu đề
+	            pw.println("ID,Tên,Thương hiệu,Giá,Số lượng");
+
+	            // Lấy dữ liệu từ DAO
+	            List<Dienthoai> ds = dao.getAll();
+	            for (Dienthoai dt : ds) {
+	                pw.println(dt.getMa() + "," + dt.getTen() + "," + dt.getHang() + ","
+	                        + dt.getGia() + "," + dt.getSoluong());
+	            }
+
+	            JOptionPane.showMessageDialog(this, "Xuất file CSV thành công!");
+	        } catch (IOException ex) {
+	            JOptionPane.showMessageDialog(this, "Lỗi khi ghi file: " + ex.getMessage());
+	        }
+	    }
+	}
+
+
+	
 	
 
 }
