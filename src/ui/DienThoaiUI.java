@@ -8,10 +8,12 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.Comparator;
 import java.util.List;
 
 import javax.swing.AbstractButton;
 import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -163,10 +165,23 @@ public class DienThoaiUI extends JFrame  {
 	panelTim.add(btnTim);
 	this.add(panelTim, BorderLayout.NORTH);
 
+	//// săp xếp 
+	
+	String[] sortOptions = {"---Sắp xếp theo---" ,"Tên(A-Z)" ,  "Tên(Z-A)" , "Giá(Thấp - Cao)" ,"Giá(Cao - Thấp)"};
+	JComboBox<String> cbSort = new JComboBox<>(sortOptions) ;
 	
 	
+	cbSort.addActionListener(new ActionListener() {
+		
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			// TODO Auto-generated method stub
+			sapXepDienThoai(cbSort.getSelectedItem().toString());
+		}
+	});
+	panelTim.add(cbSort);
 	
-		btnPanel.add(btnSua);
+		btnPanel.add(btnSua);// thêm nút sửa vào giao diện  
 		btnPanel.add(btnXoa) ; // thêm nút xóa vào giao diện  
 		this.add(panel); // thêm panel vào frame
 		
@@ -310,5 +325,38 @@ public class DienThoaiUI extends JFrame  {
 	    }
 	}
 
+	private void sapXepDienThoai(String loaiSapXep) {
+		List<Dienthoai> danhSach = dao.getAll();
+		
+		switch (loaiSapXep) {
+		case"Tên(A-Z)" :
+			danhSach.sort(Comparator.comparing(Dienthoai::getTen)) ;
+			break;
+			
+		case"Tên(Z-A)" :
+			danhSach.sort(Comparator.comparing(Dienthoai::getTen).reversed()) ;
+			break;
+			
+		case"Giá(Thấp - Cao)" :
+			danhSach.sort(Comparator.comparingDouble(Dienthoai::getGia)) ;
+			break;
+			
+		case"Giá(Cao - Thấp)" :
+			danhSach.sort(Comparator.comparingDouble(Dienthoai::getGia).reversed()) ;
+			break;
+		default:
+			return;
+		
+		}
+		  // Cập nhật lại dữ liệu trên bảng
+	    tableModel.setRowCount(0); // Xóa dữ liệu cũ
+	    for (Dienthoai dt : danhSach) {
+	        tableModel.addRow(new Object[]{
+	            dt.getMa(), dt.getTen(), dt.getHang(), dt.getGia(), dt.getSoluong()
+	        });
+	    }
+		
+	}
+	
 
 }
